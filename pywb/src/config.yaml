@@ -1,0 +1,23 @@
+# pywb config file
+# ========================================
+#
+
+collections:
+    all: $all
+    pywb:
+        index_paths: ./sample_archive/cdx/
+        archive_paths: ./sample_archive/warcs/
+    ${COLLECTION_NAME}:
+        archive_paths: /warcs/
+
+# Settings for each collection
+use_js_obj_proxy: true
+
+# Memento support, enable
+enable_memento: true
+
+# Replay content in an iframe
+framed_replay: true
+
+# Autoindex
+autoindex: 30

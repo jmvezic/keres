@@ -1,0 +1,81 @@
+version: "3.9"
+services:
+  heritrix:
+    build:
+      context: heritrix/
+      args:
+        HERITRIX_VERSION: ${HERITRIX_VERSION}
+        HERITRIX_USER: ${HERITRIX_USER}
+        HERITRIX_PASS: ${HERITRIX_PASS}
+        HERITRIX_MAX_MEM: ${HERITRIX_MAX_MEM}
+    ports:
+      - "8443:8443"
+    expose:
+      - "8443"
+    volumes:
+      - heritrix_jobs:/trix_jobs
+    depends_on:
+      - db
+  db:
+    build:
+      context: db/
+      args:
+        DB_DEFAULT: ${DB_DEFAULT}
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+      MYSQL_DATABASE: DB_WCT
+      MYSQL_USER: ${DB_WCT_USER}
+      MYSQL_PASSWORD: ${DB_WCT_PASS}
+    ports:
+      - "3306:3306"
+    expose:
+      - "3306"
+  wct:
+    build:
+      context: wct/
+      args:
+        MYSQL_USER: ${DB_WCT_USER}
+        MYSQL_PASSWORD: ${DB_WCT_PASS}
+        HERITRIX_USER: ${HERITRIX_USER}
+        HERITRIX_PASS: ${HERITRIX_PASS}
+        WCT_VERSION: ${WCT_VERSION}
+        WCT_REFRESH: ${WCT_REFRESH}
+        WCT_MAX_HARVEST: ${WCT_MAX_HARVEST}
+        WCT_WEBAPP_MAX_MEM: ${WCT_WEBAPP_MAX_MEM}
+        WCT_AGENT_MAX_MEM: ${WCT_AGENT_MAX_MEM}
+        WCT_STORE_MAX_MEM: ${WCT_STORE_MAX_MEM}
+    ports:
+      - "8080:8080"
+    volumes:
+      - heritrix_jobs:/trix_jobs
+      - heritrix_harvests:/harvests
+      - wayback_warcs:/warcs
+    environment:
+      MYSQL_PASSWORD: ${DB_WCT_PASS}
+    depends_on:
+      - db
+      - heritrix
+  pywb:
+    build: pywb/
+    ports:
+      - "9080:8080"
+      - "8081:8081"
+    expose:
+      - "8081"
+    volumes:
+      - wayback_warcs:/webarchive/collections/${COLLECTION_NAME}/archive
+    environment:
+      INIT_COLLECTION: ${COLLECTION_NAME}
+    depends_on:
+      - db
+      - heritrix
+      - wct
+
+volumes:
+  db_data: {}
+  heritrix_harvests: {}
+  heritrix_jobs: {}
+  wayback_warcs: {}
