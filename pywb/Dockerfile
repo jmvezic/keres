@@ -1,3 +1,4 @@
-FROM webrecorder/pywb:2.5.0
+ARG PYWB_VERSION
+FROM webrecorder/pywb:${PYWB_VERSION}
 COPY ./src/config.yaml /webarchive
 EXPOSE 8081

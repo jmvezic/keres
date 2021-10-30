@@ -59,7 +59,10 @@ services:
       - db
       - heritrix
   pywb:
-    build: pywb/
+    build:
+      context: pywb/
+      args:
+        PYWB_VERSION: ${PYWB_VERSION}
     ports:
       - "9080:8080"
       - "8081:8081"
