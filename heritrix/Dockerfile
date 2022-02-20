@@ -4,10 +4,12 @@ ARG HERITRIX_VERSION
 ARG HERITRIX_USER
 ARG HERITRIX_PASS
 ARG HERITRIX_MAX_MEM
-RUN apk add --no-cache sudo bash wget nano openjdk8
-RUN wget -q https://repo1.maven.org/maven2/org/archive/heritrix/heritrix/${HERITRIX_VERSION}/heritrix-${HERITRIX_VERSION}-dist.tar.gz
+RUN apk add --no-cache sudo bash wget nano openjdk8 git
+RUN apk add --no-cache maven=3.6.3-r1 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.14/community
+RUN if [ "$HERITRIX_VERSION" = "3.4.0-SNAPSHOT" ] ; then git clone https://github.com/internetarchive/heritrix3.git && cd heritrix3 && mvn clean install ; fi
+RUN if [ "$HERITRIX_VERSION" = "3.4.0-SNAPSHOT" ] ; then echo "SNAPSHOT, continue..." ; else wget -q https://repo1.maven.org/maven2/org/archive/heritrix/heritrix/${HERITRIX_VERSION}/heritrix-${HERITRIX_VERSION}-dist.tar.gz ; fi
 RUN mkdir -p /wct
-RUN mv heritrix-${HERITRIX_VERSION}-dist.tar.gz /wct/heritrix-3.4.0-SNAPSHOT-dist.tar.gz && cd /wct && tar -xzf heritrix-3.4.0-SNAPSHOT-dist.tar.gz
+RUN if [ "$HERITRIX_VERSION" = "3.4.0-SNAPSHOT" ] ; then mv heritrix3/dist/target/heritrix-3.4.0-SNAPSHOT-dist.tar.gz /wct/heritrix-3.4.0-SNAPSHOT-dist.tar.gz && cd /wct && tar -xzf heritrix-3.4.0-SNAPSHOT-dist.tar.gz ; else mv heritrix-${HERITRIX_VERSION}-dist.tar.gz /wct/heritrix-3.4.0-SNAPSHOT-dist.tar.gz && cd /wct && tar -xzf heritrix-3.4.0-SNAPSHOT-dist.tar.gz ; fi
 ENV JAVA_HOME=/usr/lib/jvm/default-jvm
 ENV JAVA_OPTS=-Xmx3000M
 COPY ./src/heritrix_start.sh /wct
